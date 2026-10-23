@@ -12,6 +12,7 @@ class AdapterTests(unittest.TestCase):
         fake.client.with_options.return_value.chat.completions.create.return_value.choices = [Mock(message=message)]
         with patch('tools.llm_tool.LLMTool', return_value=fake):
             OpenAIToolModel().turn([{'role':'user','content':'hello'}], [])
+        fake.client.with_options.assert_called_once_with(max_retries=1)
         call = fake.client.with_options.return_value.chat.completions.create.call_args
         self.assertEqual(call.kwargs['extra_body'], {'thinking':{'type':'disabled'}})
 

@@ -1,5 +1,7 @@
 # 文献研究助手 · Evidence-first Literature Agent
 
+![研究工作台的离线联动演示](docs/workspace-demo.png)
+
 从公司培训项目整理、扩展的个人作品集。原有 **PubMed / arXiv 检索 → 综述生成** 工作流保留；2026 年 10 月新增 **PDF 入库、RAG 文献问答、原生 Function Calling、逐条引用校验和执行轨迹**。
 
 ## 先看效果：不需要 API Key

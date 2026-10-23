@@ -1,6 +1,7 @@
 """Native function calling with allowlisted tools, a budget and citation checks."""
 import json
 import re
+import logging
 from dataclasses import dataclass
 
 
@@ -77,7 +78,9 @@ class OpenAIToolModel:
 
     def turn(self, messages, tools):
         try:
-            response = self.llm.client.with_options(max_retries=0).chat.completions.create(
+            # One SDK retry for transient connection/429/5xx errors; never an
+            # unbounded retry loop and never a retry of invalid tool arguments.
+            response = self.llm.client.with_options(max_retries=1).chat.completions.create(
                 model=self.llm.model, messages=messages, tools=tools,
                 tool_choice='required', temperature=0.1, max_tokens=3000,
                 # DeepSeek defaults may enable thinking, which rejects forced
@@ -87,7 +90,9 @@ class OpenAIToolModel:
             message = response.choices[0].message
             return {'role': 'assistant', 'content': message.content,
                     'tool_calls': [c.model_dump(exclude_none=True) for c in message.tool_calls or []]}
-        except Exception:
+        except Exception as exc:
+            logging.getLogger(__name__).warning('Tool provider failed: type=%s http_status=%s',
+                                               type(exc).__name__, getattr(exc, 'status_code', None))
             raise RuntimeError('模型工具调用失败；请检查模型的 function calling 支持及本地配置。') from None
 
 
